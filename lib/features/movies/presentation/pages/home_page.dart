@@ -111,38 +111,54 @@ class _HomePageState extends State<HomePage> {
                   },
                   color: AppColors.primary,
                   backgroundColor: AppColors.surface,
-                  child: ListView.builder(
+                  child: CustomScrollView(
                     controller: _scrollController,
                     physics: const AlwaysScrollableScrollPhysics(),
-                    itemCount: state.hasReachedMax 
-                        ? state.movies.length 
-                        : state.movies.length + 1,
-                    itemBuilder: (context, index) {
-                      if (index >= state.movies.length) {
-                        return const Padding(
-                          padding: EdgeInsets.all(16),
-                          child: Center(
-                            child: CircularProgressIndicator(
-                              color: AppColors.primary,
+                    slivers: [
+                      SliverPadding(
+                        padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
+                        sliver: SliverGrid(
+                          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 2,
+                            crossAxisSpacing: 16,
+                            mainAxisSpacing: 16,
+                            childAspectRatio: 0.6,
+                          ),
+                          delegate: SliverChildBuilderDelegate(
+                            (context, index) {
+                              if (index >= state.movies.length) {
+                                return null;
+                              }
+
+                              final movie = state.movies[index];
+                              return MovieCard(
+                                movie: movie,
+                                onTap: () {
+                                  _showMovieDetail(context, movie);
+                                },
+                                onFavoritePressed: () {
+                                  context.read<MovieBloc>().add(
+                                    MovieToggleFavorite(movieId: movie.id),
+                                  );
+                                },
+                              );
+                            },
+                            childCount: state.movies.length,
+                          ),
+                        ),
+                      ),
+                      if (!state.hasReachedMax)
+                        const SliverToBoxAdapter(
+                          child: Padding(
+                            padding: EdgeInsets.all(16),
+                            child: Center(
+                              child: CircularProgressIndicator(
+                                color: AppColors.primary,
+                              ),
                             ),
                           ),
-                        );
-                      }
-
-                      final movie = state.movies[index];
-                      return MovieCard(
-                        movie: movie,
-                        onTap: () {
-                          // Navigate to movie detail
-                          _showMovieDetail(context, movie);
-                        },
-                        onFavoritePressed: () {
-                          context.read<MovieBloc>().add(
-                            MovieToggleFavorite(movieId: movie.id),
-                          );
-                        },
-                      );
-                    },
+                        ),
+                    ],
                   ),
                 );
               }
